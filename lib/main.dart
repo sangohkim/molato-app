@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
+
+import 'package:molato/molato_webview.dart';
 
 void main() {
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
@@ -13,8 +17,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
         fontFamily: "Pretendard",
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme:
+          const AppBarTheme(elevation: 0, backgroundColor: Colors.white),
       ),
-      home: const MyHomePage(),
+      home: const MolatoWebView(),
     );
   }
 }
