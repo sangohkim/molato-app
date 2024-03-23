@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 // import 'package:molato/molato_webview.dart';
-import 'package:molato/molato_webview_copy.dart';
+import 'package:molato/molato_webview.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
         fontFamily: "Pretendard",
         scaffoldBackgroundColor: Colors.white,
         appBarTheme:
-          const AppBarTheme(elevation: 0, backgroundColor: Colors.white),
+            const AppBarTheme(elevation: 0, backgroundColor: Colors.white),
       ),
       home: const MolatoWebView(),
     );

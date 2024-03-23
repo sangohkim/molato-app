@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:webview_flutter_android/webview_flutter_android.dart';
-import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:molato/widgets/loading_indicator.dart';
 
@@ -14,7 +13,20 @@ class MolatoWebView extends StatefulWidget {
 
 class _MolatoWebViewState extends State<MolatoWebView> {
   late bool isLoading;
-  late final WebViewController _webViewController;
+  final GlobalKey webViewKey = GlobalKey();
+
+  InAppWebViewController? webViewController;
+  InAppWebViewSettings settings = InAppWebViewSettings(
+      disallowOverScroll: true,
+      overScrollMode: OverScrollMode.NEVER,
+      disableHorizontalScroll: true,
+      horizontalScrollBarEnabled: false,
+      mediaPlaybackRequiresUserGesture: false,
+      allowsInlineMediaPlayback: true,
+      iframeAllow: "camera; microphone",
+      iframeAllowFullscreen: true);
+
+  PullToRefreshController? pullToRefreshController;
 
   @override
   void initState() {
@@ -22,116 +34,96 @@ class _MolatoWebViewState extends State<MolatoWebView> {
 
     isLoading = true;
 
-    late final PlatformWebViewControllerCreationParams params;
-    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
-      params = WebKitWebViewControllerCreationParams(
-        allowsInlineMediaPlayback: true,
-        mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
-      );
-    } else {
-      params = const PlatformWebViewControllerCreationParams();
-    }
-
-    final WebViewController controller =
-        WebViewController.fromPlatformCreationParams(params);
-
-    controller
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0x00000000))
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onProgress: (int progress) {
-            debugPrint('WebView is loading (progress : $progress%)');
-          },
-          onPageStarted: (String url) {
-            debugPrint('Page started loading: $url');
-            setState(() => isLoading = true);
-          },
-          onPageFinished: (String url) {
-            debugPrint('Page finished loading: $url');
-            setState(() => isLoading = false);
-          },
-          onWebResourceError: (WebResourceError error) {
-            debugPrint('''
-Page resource error:
-  code: ${error.errorCode}
-  description: ${error.description}
-  errorType: ${error.errorType}
-  isForMainFrame: ${error.isForMainFrame}
-          ''');
-          },
-          onNavigationRequest: (NavigationRequest request) {
-            // if (request.url.startsWith('https://www.youtube.com/')) {
-            //   debugPrint('blocking navigation to ${request.url}');
-            //   return NavigationDecision.prevent;
-            // }
-            debugPrint('allowing navigation to ${request.url}');
-            return NavigationDecision.navigate;
-          },
-          onUrlChange: (UrlChange change) {
-            debugPrint('url change to ${change.url}');
-          },
-          onHttpAuthRequest: (HttpAuthRequest request) {
-            debugPrint("$request");
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse('https://molato.fun/'));
-
-    if (controller.platform is AndroidWebViewController) {
-      AndroidWebViewController.enableDebugging(true);
-      (controller.platform as AndroidWebViewController)
-          .setMediaPlaybackRequiresUserGesture(false);
-    }
-
-    _webViewController = controller;
+    // pullToRefreshController = kIsWeb ||
+    //         ![TargetPlatform.iOS, TargetPlatform.android]
+    //             .contains(defaultTargetPlatform)
+    //     ? null
+    //     : PullToRefreshController(
+    //         settings: PullToRefreshSettings(
+    //           color: Colors.blue,
+    //         ),
+    //         onRefresh: () async {
+    //           if (defaultTargetPlatform == TargetPlatform.android) {
+    //             webViewController?.reload();
+    //           } else if (defaultTargetPlatform == TargetPlatform.iOS ||
+    //               defaultTargetPlatform == TargetPlatform.macOS) {
+    //             webViewController?.loadUrl(
+    //                 urlRequest:
+    //                     URLRequest(url: await webViewController?.getUrl()));
+    //           }
+    //         },
+    //       );
   }
 
   @override
   Widget build(BuildContext context) {
-    late WebViewWidget webViewWidget;
-
-    if (WebViewPlatform.instance is AndroidWebViewPlatform) {
-      debugPrint("android detected for webview");
-      webViewWidget = WebViewWidget.fromPlatformCreationParams(
-        params: AndroidWebViewWidgetCreationParams(
-          controller: _webViewController.platform,
-          displayWithHybridComposition: true,
-          //   gestureRecognizers: {
-          //   Factory<OneSequenceGestureRecognizer>(() {
-          //     TapGestureRecognizer tabGestureRecognizer = TapGestureRecognizer();
-          //     tabGestureRecognizer.onTapDown = (_) {
-          //       FocusScope.of(context).unfocus();
-          //     };
-          //     return tabGestureRecognizer;
-          //   }),
-          //   // pinch-to-zoom 기능을 위해서
-          //   Factory<ScaleGestureRecognizer>(() => ScaleGestureRecognizer()),
-          // },
-        ),
-      );
-    } else {
-      debugPrint("Not android detected for webview");
-      webViewWidget = WebViewWidget(
-        controller: _webViewController,
-        // gestureRecognizers: {
-        //   Factory<OneSequenceGestureRecognizer>(() {
-        //     TapGestureRecognizer tabGestureRecognizer = TapGestureRecognizer();
-        //     tabGestureRecognizer.onTapDown = (_) {
-        //       FocusScope.of(context).unfocus();
-        //     };
-        //     return tabGestureRecognizer;
-        //   }),
-        //   // pinch-to-zoom 기능을 위해서
-        //   Factory<ScaleGestureRecognizer>(() => ScaleGestureRecognizer()),
-        // },
-      );
-    }
-    // T
     return Scaffold(
       body: SafeArea(
-        child: isLoading ? const CircularLoadingIndicator() : webViewWidget
-      ),
+          child: Stack(
+        children: [
+          InAppWebView(
+            key: webViewKey,
+            initialUrlRequest: URLRequest(url: WebUri('https://molato.fun')),
+            initialSettings: settings,
+            // pullToRefreshController: pullToRefreshController,
+            onWebViewCreated: (controller) async {
+              webViewController = controller;
+            },
+            onLoadStart: (controller, url) async {
+              setState(() => isLoading = true);
+            },
+            onPermissionRequest: (controller, request) async {
+              return PermissionResponse(
+                  resources: request.resources,
+                  action: PermissionResponseAction.GRANT);
+            },
+            shouldOverrideUrlLoading: (controller, navigationAction) async {
+              var uri = navigationAction.request.url!;
+
+              if (![
+                "http",
+                "https",
+                "file",
+                "chrome",
+                "data",
+                "javascript",
+                "about"
+              ].contains(uri.scheme)) {
+                if (await canLaunchUrl(uri)) {
+                  // Launch the App
+                  await launchUrl(
+                    uri,
+                  );
+                  // and cancel the request
+                  return NavigationActionPolicy.CANCEL;
+                }
+              }
+
+              return NavigationActionPolicy.ALLOW;
+            },
+            onLoadStop: (controller, url) async {
+              pullToRefreshController?.endRefreshing();
+              setState(() => isLoading = false);
+            },
+            onReceivedError: (controller, request, error) {
+              pullToRefreshController?.endRefreshing();
+              setState(() => isLoading = false);
+            },
+            onProgressChanged: (controller, progress) {
+              if (progress == 100) {
+                pullToRefreshController?.endRefreshing();
+              }
+            },
+            onConsoleMessage: (controller, consoleMessage) {
+              debugPrint("$consoleMessage");
+            },
+          ),
+          Visibility(
+            visible: isLoading,
+            child: const CircularLoadingIndicator(),
+          ),
+        ],
+      )),
     );
   }
 }
