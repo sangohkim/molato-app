@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 
-import 'package:molato/molato_webview.dart';
+// import 'package:molato/molato_webview.dart';
+import 'package:molato/molato_webview_copy.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
+}
+
+class MyScrollBehavior extends ScrollBehavior {
+  Widget buildViewportChrome(
+      BuildContext context, Widget child, AxisDirection axisDirection) {
+    return child;
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -14,6 +22,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      builder: (context, child) {
+        return ScrollConfiguration(
+          behavior: MyScrollBehavior(),
+          child: child!,
+        );
+      },
       theme: ThemeData(
         fontFamily: "Pretendard",
         scaffoldBackgroundColor: Colors.white,
