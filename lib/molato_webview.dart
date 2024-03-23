@@ -17,11 +17,21 @@ class _MolatoWebViewState extends State<MolatoWebView> {
 
   InAppWebViewController? webViewController;
   InAppWebViewSettings settings = InAppWebViewSettings(
+      javaScriptCanOpenWindowsAutomatically: true,
+      javaScriptEnabled: true,
+      useOnDownloadStart: true,
+      useOnLoadResource: true,
+      useShouldOverrideUrlLoading: true,
+      mediaPlaybackRequiresUserGesture: true,
+      allowFileAccessFromFileURLs: true,
+      allowUniversalAccessFromFileURLs: true,
+      verticalScrollBarEnabled: true,
+      userAgent:
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.122 Safari/537.36',
       disallowOverScroll: true,
       overScrollMode: OverScrollMode.NEVER,
       disableHorizontalScroll: true,
       horizontalScrollBarEnabled: false,
-      mediaPlaybackRequiresUserGesture: false,
       allowsInlineMediaPlayback: true,
       iframeAllow: "camera; microphone",
       iframeAllowFullscreen: true);
@@ -63,7 +73,8 @@ class _MolatoWebViewState extends State<MolatoWebView> {
         children: [
           InAppWebView(
             key: webViewKey,
-            initialUrlRequest: URLRequest(url: WebUri('https://molato.fun')),
+            initialUrlRequest:
+                URLRequest(url: WebUri('http://localhost:5173/signin')),
             initialSettings: settings,
             // pullToRefreshController: pullToRefreshController,
             onWebViewCreated: (controller) async {
