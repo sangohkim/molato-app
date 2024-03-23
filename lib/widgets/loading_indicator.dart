@@ -2,6 +2,8 @@ import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
+import 'package:molato/constants/colors.dart';
+
 class CircularLoadingIndicator extends StatefulWidget {
   const CircularLoadingIndicator({super.key});
 
@@ -16,8 +18,8 @@ class _CircularLoadingIndicatorState extends State<CircularLoadingIndicator> {
     return Scaffold(
       body: Center(
           child: Platform.isIOS
-              ? const CupertinoActivityIndicator()
-              : const CircularProgressIndicator()),
+              ? const CupertinoActivityIndicator(color: ColorsInfo.primary)
+              : const CircularProgressIndicator(color: ColorsInfo.primary)),
     );
   }
 }
