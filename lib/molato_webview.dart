@@ -130,7 +130,10 @@ Page resource error:
     // T
     return Scaffold(
       body: SafeArea(
-        child: isLoading ? const CircularLoadingIndicator() : webViewWidget
+        child: GestureDetector(
+          onHorizontalDragUpdate: null,
+          child: isLoading ? const CircularLoadingIndicator() : webViewWidget
+        ),
       ),
     );
   }
